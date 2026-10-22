@@ -4,17 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Validation de Devis - Espace Client</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-    // Remplacez ces valeurs par vos vraies informations Supabase
-    const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co/rest/v1/';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -25,7 +18,6 @@
 
     <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
         
-        <!-- Header -->
         <div class="flex justify-between items-start border-b border-slate-800 pb-5">
             <div>
                 <span class="text-xs uppercase font-bold text-sky-400 tracking-wider">Espace Validation Client</span>
@@ -36,16 +28,13 @@
             </div>
         </div>
 
-        <!-- Détails Devis -->
         <div id="quote-body" class="space-y-4 text-sm text-slate-300">
             <div class="animate-pulse space-y-3">
                 <div class="h-4 bg-slate-800 rounded w-3/4"></div>
                 <div class="h-4 bg-slate-800 rounded w-1/2"></div>
-                <div class="h-12 bg-slate-800 rounded"></div>
             </div>
         </div>
 
-        <!-- Zone d'Action / Signature -->
         <div id="quote-actions" class="border-t border-slate-800 pt-5 flex flex-col sm:flex-row justify-end gap-3 hidden">
             <button onclick="handleResponse('REFUSED')" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-rose-500/50 text-rose-400 hover:bg-rose-500 hover:text-white transition font-medium text-sm">
                 <i class="fa-solid fa-xmark mr-2"></i>Refuser le devis
@@ -55,13 +44,15 @@
             </button>
         </div>
 
-        <!-- Notification de confirmation -->
         <div id="status-message" class="hidden p-4 rounded-xl text-center text-sm font-semibold"></div>
-
     </div>
 
     <script>
-        // Récupération du paramètre ?devis= dans l'URL
+        // CONFIGURATION SUPABASE (Remplacez par vos informations)
+        const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const urlParams = new URLSearchParams(window.location.search);
         const devisId = urlParams.get('devis');
 
@@ -70,42 +61,77 @@
         const quoteActions = document.getElementById('quote-actions');
         const statusMsg = document.getElementById('status-message');
 
-        if (!devisId) {
-            quoteTitle.innerText = "Lien Invalide";
+        let currentQuote = null;
+
+        async function loadQuote() {
+            if (!devisId) {
+                quoteTitle.innerText = "Lien Invalide";
+                quoteBody.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-center">Aucun numéro de devis spécifié dans l'URL.</div>`;
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('devis')
+                .select('*')
+                .eq('id', devisId)
+                .single();
+
+            if (error || !data) {
+                quoteTitle.innerText = "Devis introuvable";
+                quoteBody.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-center">Ce devis n'existe pas ou a été supprimé.</div>`;
+                return;
+            }
+
+            currentQuote = data;
+            quoteTitle.innerText = `Devis #${data.id}`;
             quoteBody.innerHTML = `
-                <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-center">
-                    <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
-                    <p>Aucun numéro de devis spécifié dans l'adresse URL.</p>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between"><span class="text-slate-400">Client / Entreprise :</span> <strong class="text-white">${data.client_name || data.client}</strong></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Service :</span> <strong class="text-white">${data.service || 'Infrastructure Cloud'}</strong></div>
+                    <div class="flex justify-between border-t border-slate-800 pt-2"><span class="text-slate-400">Montant Total TTC :</span> <strong class="text-emerald-400 text-base">${data.amount_ttc || data.amount} €</strong></div>
                 </div>
             `;
-        } else {
-            // Simulation de chargement (ou appel Supabase API)
-            setTimeout(() => {
-                quoteTitle.innerText = `Devis #${devisId}`;
-                quoteBody.innerHTML = `
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                        <div class="flex justify-between"><span class="text-slate-400">Entreprise / Destinataire :</span> <strong class="text-white">TechCorp SARL</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-400">Service :</span> <strong class="text-white">Infrastructure Cloud Linux & Hardening SSH</strong></div>
-                        <div class="flex justify-between border-t border-slate-800 pt-2"><span class="text-slate-400">Montant Total TTC :</span> <strong class="text-emerald-400 text-base">1 440,00 €</strong></div>
-                    </div>
-                    <p class="text-xs text-slate-400">
-                        En cliquant sur "Signer & Accepter", vous validez l'exécution des prestations d'infrastructure et l'ouverture de vos accès serveurs.
-                    </p>
-                `;
-                quoteActions.classList.remove('hidden');
-            }, 500);
-        }
 
-        function handleResponse(status) {
-            quoteActions.classList.add('hidden');
-            if (status === 'ACCEPTED') {
-                statusMsg.className = "p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center font-medium block";
-                statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-xl mb-1"></i><br>Merci ! Le devis <strong>#${devisId}</strong> a été validé et signé. Votre facture et vos accès système ont été générés.`;
+            if (data.status === 'SENT' || data.status === 'EN_ATTENTE') {
+                quoteActions.classList.remove('hidden');
             } else {
-                statusMsg.className = "p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-center font-medium block";
-                statusMsg.innerHTML = `<i class="fa-solid fa-circle-xmark text-xl mb-1"></i><br>Le devis <strong>#${devisId}</strong> a été refusé. Notre équipe en a été notifiée.`;
+                statusMsg.className = "p-4 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-300 text-center font-medium block";
+                statusMsg.innerHTML = `Ce devis a déjà été traité (Statut : <strong>${data.status}</strong>).`;
             }
         }
+
+        async function handleResponse(status) {
+            const newStatus = status === 'ACCEPTED' ? 'ACCEPTED' : 'REFUSED';
+
+            const { error } = await supabaseClient
+                .from('devis')
+                .update({ status: newStatus })
+                .eq('id', devisId);
+
+            if (error) {
+                alert("Erreur lors de la mise à jour du devis.");
+                return;
+            }
+
+            if (newStatus === 'ACCEPTED') {
+                await supabaseClient.from('factures').insert([
+                    { 
+                        id: 'FAC-' + devisId.replace('DEV-', ''), 
+                        client_name: currentQuote.client_name || currentQuote.client, 
+                        amount_ttc: currentQuote.amount_ttc || currentQuote.amount, 
+                        status: 'PENDING' 
+                    }
+                ]);
+            }
+
+            quoteActions.classList.add('hidden');
+            statusMsg.className = `p-4 rounded-xl text-center font-medium block ${newStatus === 'ACCEPTED' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'}`;
+            statusMsg.innerHTML = newStatus === 'ACCEPTED' 
+                ? `<i class="fa-solid fa-circle-check text-xl mb-1"></i><br>Merci ! Le devis <strong>#${devisId}</strong> a été validé et signé. Votre facture a été générée.` 
+                : `Le devis <strong>#${devisId}</strong> a été refusé.`;
+        }
+
+        loadQuote();
     </script>
 </body>
 </html>
