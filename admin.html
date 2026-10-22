@@ -3,201 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexusERP - Panneau d'Administration & IAM Linux</title>
-    <!-- Tailwind CSS CDN -->
+    <title>NexusERP - Admin Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f7ff', 100: '#e0effe', 500: '#0284c7', 600: '#0369a1', 700: '#075985', 900: '#0c4a6e',
-                        },
-                        linux: { 500: '#f59e0b', 600: '#d97706', dark: '#1e1e1e' }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .font-mono-code { font-family: 'Fira Code', monospace; }
     </style>
 </head>
-<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+<body class="h-full bg-slate-900 text-slate-100 flex flex-col md:flex-row min-h-screen">
 
-    <div id="app" class="min-h-screen flex flex-col md:flex-row">
-
-        <!-- NAVIGATION SIDEBAR -->
-        <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between border-r border-slate-800">
-            <div>
-                <!-- Brand Header -->
-                <div class="p-5 flex items-center justify-between border-b border-slate-800">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-amber-500 to-emerald-500 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            <i class="fa-solid fa-server"></i>
-                        </div>
-                        <div>
-                            <h1 class="font-bold text-white leading-tight">NexusERP</h1>
-                            <p class="text-xs text-slate-400">Admin & Linux IAM</p>
-                        </div>
-                    </div>
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-slate-950 border-r border-slate-800 p-4 flex flex-col justify-between flex-shrink-0">
+        <div class="space-y-6">
+            <div class="flex items-center space-x-3 p-2 border-b border-slate-800 pb-4">
+                <div class="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center font-bold text-white shadow-lg">
+                    <i class="fa-solid fa-server"></i>
                 </div>
-
-                <!-- Navigation Links -->
-                <nav class="p-4 space-y-1">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all bg-sky-600 text-white shadow-md">
-                        <i class="fa-solid fa-chart-pie w-5 text-center"></i>
-                        <span>Tableau de bord</span>
-                    </button>
-                    <button onclick="switchTab('quotes')" id="nav-quotes" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-file-contract w-5 text-center"></i>
-                        <span>Devis d'Infrastructure</span>
-                    </button>
-                    <button onclick="switchTab('billing')" id="nav-billing" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i>
-                        <span>Facturation</span>
-                    </button>
-                    <button onclick="switchTab('linux-iam')" id="nav-linux-iam" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 text-slate-400 hover:text-white">
-                        <i class="fa-brands fa-linux w-5 text-center"></i>
-                        <span>Utilisateurs Linux IAM</span>
-                    </button>
-                </nav>
-            </div>
-
-            <!-- Bottom Connection Status -->
-            <div class="p-4 border-t border-slate-800 space-y-3">
-                <div class="bg-slate-950 p-3 rounded-lg text-xs font-mono-code text-slate-400 border border-slate-800">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>Database</span>
-                        <span class="text-emerald-400 font-bold">ONLINE</span>
-                    </div>
-                    <div>Engine: <span class="text-slate-200">Supabase/PostgreSQL</span></div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 overflow-y-auto p-4 md:p-8">
-
-            <!-- HEADER / TOPBAR -->
-            <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-6 border-b border-slate-200 dark:border-slate-800 gap-4">
                 <div>
-                    <h2 id="page-title" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Tableau de bord d'Entreprise</h2>
-                    <p id="page-subtitle" class="text-sm text-slate-500 dark:text-slate-400">Gestion unifiée des devis, factures et accès Linux IAM</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button onclick="openQuoteModal()" class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow font-medium text-sm transition">
-                        <i class="fa-solid fa-file-circle-plus"></i>
-                        <span>Nouveau Devis</span>
-                    </button>
-                </div>
-            </header>
-
-            <!-- TAB 1: DASHBOARD -->
-            <div id="tab-dashboard" class="tab-content space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Facturé TTC</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1" id="kpi-revenue">0,00 €</h3>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Devis en Attente</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1" id="kpi-quotes-total">0,00 €</h3>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Comptes Linux IAM</p>
-                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1" id="kpi-users-count">0</h3>
-                    </div>
+                    <h1 class="font-bold text-white text-base">NexusERP</h1>
+                    <p class="text-xs text-slate-400">Administration & IAM</p>
                 </div>
             </div>
 
-            <!-- TAB 2: QUOTES MODULE -->
-            <div id="tab-quotes" class="tab-content hidden space-y-6">
-                <div class="flex justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
-                    <h3 class="font-bold text-lg">Liste des Devis d'Infrastructure</h3>
-                    <button onclick="openQuoteModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg font-medium transition">
-                        <i class="fa-solid fa-plus mr-2"></i>Nouveau Devis
-                    </button>
-                </div>
+            <!-- NAVIGATION -->
+            <nav class="space-y-1">
+                <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-sky-600 text-white">
+                    <i class="fa-solid fa-chart-pie w-5"></i><span>Tableau de bord</span>
+                </button>
+                <button onclick="showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-contract w-5"></i><span>Devis Infrastructure</span>
+                </button>
+                <button onclick="showTab('billing')" id="btn-billing" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-invoice-dollar w-5"></i><span>Facturation</span>
+                </button>
+                <button onclick="showTab('linux')" id="btn-linux" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-brands fa-linux w-5"></i><span>Utilisateurs Linux IAM</span>
+                </button>
+            </nav>
+        </div>
 
-                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
-                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                            <tr>
-                                <th class="p-4">N° Devis</th>
-                                <th class="p-4">Client</th>
-                                <th class="p-4">Service</th>
-                                <th class="p-4">Total TTC</th>
-                                <th class="p-4">Statut</th>
-                                <th class="p-4 text-right">Actions / Lien Client</th>
-                            </tr>
-                        </thead>
-                        <tbody id="quotes-table-body" class="divide-y divide-slate-200 dark:divide-slate-700/60"></tbody>
-                    </table>
+        <div class="pt-4 border-t border-slate-800">
+            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-400">
+                <div class="flex justify-between items-center mb-1">
+                    <span>Base de données</span>
+                    <span class="text-emerald-400 font-bold">ONLINE</span>
+                </div>
+                <div class="text-[10px] text-slate-500">Supabase PostgreSQL Connected</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+        
+        <!-- HEADER BAR -->
+        <div class="flex justify-between items-center pb-6 mb-6 border-b border-slate-800">
+            <div>
+                <h2 class="text-2xl font-bold text-white">Panneau de Contrôle</h2>
+                <p class="text-sm text-slate-400">Gérez vos prestations, vos factures et votre infrastructure Linux.</p>
+            </div>
+            <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
+                <i class="fa-solid fa-plus"></i><span>Nouveau Devis</span>
+            </button>
+        </div>
+
+        <!-- SECTION 1: DASHBOARD -->
+        <div id="tab-dashboard" class="tab-pane space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
+                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Facturation Validée</span>
+                    <h3 class="text-2xl font-bold text-emerald-400 mt-2" id="stat-revenue">0.00 €</h3>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
+                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Devis en Attente</span>
+                    <h3 class="text-2xl font-bold text-amber-400 mt-2" id="stat-pending">0.00 €</h3>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
+                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Comptes Linux Actifs</span>
+                    <h3 class="text-2xl font-bold text-sky-400 mt-2" id="stat-users">0</h3>
                 </div>
             </div>
+        </div>
 
-            <!-- TAB 3: BILLING MODULE -->
-            <div id="tab-billing" class="tab-content hidden space-y-6">
-                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden p-4">
-                    <h3 class="font-bold text-lg mb-4">Factures Générées</h3>
-                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                            <tr>
-                                <th class="p-4">N° Facture</th>
-                                <th class="p-4">Client</th>
-                                <th class="p-4">Total TTC</th>
-                                <th class="p-4">Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoices-table-body" class="divide-y divide-slate-200 dark:divide-slate-700/60"></tbody>
-                    </table>
-                </div>
+        <!-- SECTION 2: QUOTES -->
+        <div id="tab-quotes" class="tab-pane hidden space-y-6">
+            <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-4 shadow-xl overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs uppercase text-slate-400 border-b border-slate-700 pb-2">
+                        <tr>
+                            <th class="p-3">N° Devis</th>
+                            <th class="p-3">Client</th>
+                            <th class="p-3">Service</th>
+                            <th class="p-3">Total TTC</th>
+                            <th class="p-3">Statut</th>
+                            <th class="p-3 text-right">Lien Client</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotes-list" class="divide-y divide-slate-700/50"></tbody>
+                </table>
             </div>
+        </div>
 
-            <!-- TAB 4: LINUX IAM -->
-            <div id="tab-linux-iam" class="tab-content hidden space-y-6">
-                <div class="bg-slate-900 p-6 rounded-2xl text-white space-y-4 border border-slate-800 shadow-xl">
-                    <div class="flex items-center space-x-3">
-                        <i class="fa-brands fa-linux text-amber-500 text-3xl"></i>
-                        <div>
-                            <h3 class="text-lg font-bold">Gestion des Identités et Accès Linux (IAM)</h3>
-                            <p class="text-xs text-slate-400">Provisionnement SSH automatique lors de la validation des devis</p>
-                        </div>
-                    </div>
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono-code text-xs text-amber-400 overflow-x-auto" id="linux-users-list">
-                        <!-- Clés SSH injectées ici -->
-                    </div>
-                </div>
+        <!-- SECTION 3: BILLING -->
+        <div id="tab-billing" class="tab-pane hidden space-y-6">
+            <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-4 shadow-xl overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs uppercase text-slate-400 border-b border-slate-700 pb-2">
+                        <tr>
+                            <th class="p-3">N° Facture</th>
+                            <th class="p-3">Client</th>
+                            <th class="p-3">Total TTC</th>
+                            <th class="p-3">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoices-list" class="divide-y divide-slate-700/50"></tbody>
+                </table>
             </div>
+        </div>
 
-        </main>
-    </div>
+        <!-- SECTION 4: LINUX IAM -->
+        <div id="tab-linux" class="tab-pane hidden space-y-6">
+            <div class="bg-slate-800 border border-slate-700/50 p-6 rounded-2xl space-y-4">
+                <h3 class="text-lg font-bold text-amber-400 flex items-center"><i class="fa-brands fa-linux mr-2"></i>Clés SSH & Provisionnement UNIX</h3>
+                <div class="bg-slate-950 p-4 rounded-xl font-mono-code text-xs text-emerald-400 border border-slate-800" id="linux-list"></div>
+            </div>
+        </div>
+
+    </main>
 
     <!-- MODAL CREATION DEVIS -->
-    <div id="quote-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Créer un Nouveau Devis</h3>
-                <button onclick="closeQuoteModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="modal-quote" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-white">Nouveau Devis</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form id="new-quote-form" onsubmit="saveQuote(event)" class="space-y-4">
+            <form onsubmit="createQuote(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nom du Client / Entreprise</label>
-                    <input type="text" id="quote-client" required placeholder="ex: TechCorp SARL" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs text-slate-400 mb-1">Nom du Client</label>
+                    <input type="text" id="form-client" required placeholder="ex: TechCorp SARL" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Description du Service</label>
-                    <input type="text" id="quote-service" required placeholder="ex: Infrastructure Cloud & Hardening Linux" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs text-slate-400 mb-1">Service / Intitulé</label>
+                    <input type="text" id="form-service" required placeholder="ex: Deploiement Cloud Linux" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Montant Total TTC (€)</label>
-                    <input type="number" step="0.01" id="quote-amount" required placeholder="1440.00" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs text-slate-400 mb-1">Montant Total TTC (€)</label>
+                    <input type="number" step="0.01" id="form-amount" required placeholder="1440.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
-                <div class="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">Annuler</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg">Créer & Générer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let quotes = JSON.parse(localStorage.getItem('quotes')) || [
+            { id: 'DEV-2026-001', client: 'TechCorp SARL', service: 'Hardening Server Linux', amount: '1440.00', status: 'EN_ATTENTE' }
+        ];
+
+        let invoices = JSON.parse(localStorage.getItem('invoices')) || [
+            { id: 'FAC-2026-001', client: 'TechCorp SARL', amount: '1440.00', status: 'PAYEE' }
+        ];
+
+        let linuxUsers = JSON.parse(localStorage.getItem('linuxUsers')) || [
+            { username: 'techcorp_admin', uid: 1001, sshKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...' }
+        ];
+
+        function showTab(tabName) {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            
+            // Réinitialiser le style des boutons
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Afficher l'onglet sélectionné
+            const targetPane = document.getElementById('tab-' + tabName);
+            if (targetPane) targetPane.classList.remove('hidden');
+
+            // Mettre en valeur le bouton cliqué
+            const targetBtn = document.getElementById('btn-' + tabName);
+            if (targetBtn) {
+                targetBtn.classList.add('bg-sky-600', 'text-white');
+                targetBtn.classList.remove('text-slate-400');
+            }
+            render();
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('modal-quote');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function createQuote(e) {
+            e.preventDefault();
+            const client = document.getElementById('form-client').value;
+            const service = document.getElementById('form-service').value;
+            const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
+            
+            const newId = 'DEV-2026-' + String(quotes.length + 1).padStart(3, '0');
+
+            quotes.push({ id: newId, client, service, amount, status: 'EN_ATTENTE' });
+            localStorage.setItem('quotes', JSON.stringify(quotes));
+
+            toggleModal(false);
+            e.target.reset();
+            showTab('quotes');
+        }
+
+        function copyClientLink(quoteId) {
+            const link = window.location.origin + '/?devis=' + quoteId;
+            navigator.clipboard.writeText(link);
+            alert("Lien client copié !\n\n" + link);
+        }
+
+        function render() {
+            // Rendu Devis
+            document.getElementById('quotes-list').innerHTML = quotes.map(q => `
+                <tr>
+                    <td class="p-3 font-mono-code font-bold text-sky-400">${q.id}</td>
+                    <td class="p-3 text-white font-medium">${q.client}</td>
+                    <td class="p-3 text-slate-400 text-xs">${q.service}</td>
+                    <td class="p-3 font-bold">${q.amount} €</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
+                    <td class="p-3 text-right">
+                        <button onclick="copyClientLink('${q.id}')" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
+                            <i class="fa-solid fa-copy mr-1"></i>Copier Lien
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Rendu Factures
+            document.getElementById('invoices-list').innerHTML = invoices.map(i => `
+                <tr>
+                    <td class="p-3 font-mono-code font-bold text-emerald-400">${i.id}</td>
+                    <td class="p-3 text-white font-medium">${i.client}</td>
+                    <td class="p-3 font-bold">${i.amount} €</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400">${i.status}</span></td>
+                </tr>
+            `).join('');
+
+            // Rendu Linux IAM
+            document.getElementById('linux-list').innerHTML = linuxUsers.map(u => `
+                <div class="mb-2 pb-2 border-b border-slate-800">
+                    <div>USER: <strong class="text-white">${u.username}</strong> (UID: ${u.uid})</div>
+                    <div>SSH KEY: ${u.sshKey}</div>
+                </div>
+            `).join('');
+
+            // KPIs
+            const totalRev = invoices.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+            const totalPending = quotes.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+
+            document.getElementById('stat-revenue').innerText = totalRev.toFixed(2) + ' €';
+            document.getElementById('stat-pending').innerText = totalPending.toFixed(2) + ' €';
+            document.getElementById('stat-users').innerText = linuxUsers.length;
+        }
+
+        // Initialisation
+        showTab('dashboard');
+    </script>
+</body>
+</html>
