@@ -3,48 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validation de Devis - Espace Client</title>
+    <title>NexusERP - Admin Console</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        .font-mono-code { font-family: 'Fira Code', monospace; }
     </style>
 </head>
-<body class="h-full bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+<body class="h-full bg-slate-900 text-slate-100 flex flex-col md:flex-row min-h-screen">
 
-    <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
-        
-        <div class="flex justify-between items-start border-b border-slate-800 pb-5">
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-slate-950 border-r border-slate-800 p-4 flex flex-col justify-between flex-shrink-0">
+        <div class="space-y-6">
+            <div class="flex items-center space-x-3 p-2 border-b border-slate-800 pb-4">
+                <div class="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center font-bold text-white shadow-lg">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base">NexusERP</h1>
+                    <p class="text-xs text-slate-400">Administration & IAM</p>
+                </div>
+            </div>
+
+            <nav class="space-y-1">
+                <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-sky-600 text-white">
+                    <i class="fa-solid fa-chart-pie w-5"></i><span>Tableau de bord</span>
+                </button>
+                <button onclick="showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-contract w-5"></i><span>Devis Infrastructure</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="pt-4 border-t border-slate-800">
+            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-400">
+                <div class="flex justify-between items-center mb-1">
+                    <span>Base de données</span>
+                    <span class="text-emerald-400 font-bold">ONLINE</span>
+                </div>
+                <div class="text-[10px] text-slate-500">Supabase Connected</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+        <div class="flex justify-between items-center pb-6 mb-6 border-b border-slate-800">
             <div>
-                <span class="text-xs uppercase font-bold text-sky-400 tracking-wider">Espace Validation Client</span>
-                <h1 class="text-2xl font-bold text-white mt-1" id="quote-title">Chargement du devis...</h1>
+                <h2 class="text-2xl font-bold text-white">Panneau de Contrôle</h2>
+                <p class="text-sm text-slate-400">Gestion des devis et facturation en temps réel.</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-                <i class="fa-solid fa-file-contract text-lg"></i>
-            </div>
-        </div>
-
-        <div id="quote-body" class="space-y-4 text-sm text-slate-300">
-            <div class="animate-pulse space-y-3">
-                <div class="h-4 bg-slate-800 rounded w-3/4"></div>
-                <div class="h-4 bg-slate-800 rounded w-1/2"></div>
-            </div>
-        </div>
-
-        <div id="quote-actions" class="border-t border-slate-800 pt-5 flex flex-col sm:flex-row justify-end gap-3 hidden">
-            <button onclick="handleResponse('REFUSED')" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-rose-500/50 text-rose-400 hover:bg-rose-500 hover:text-white transition font-medium text-sm">
-                <i class="fa-solid fa-xmark mr-2"></i>Refuser le devis
-            </button>
-            <button onclick="handleResponse('ACCEPTED')" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition font-bold text-sm shadow-lg shadow-emerald-900/20">
-                <i class="fa-solid fa-signature mr-2"></i>Signer & Accepter
+            <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
+                <i class="fa-solid fa-plus"></i><span>Nouveau Devis</span>
             </button>
         </div>
 
-        <div id="status-message" class="hidden p-4 rounded-xl text-center text-sm font-semibold"></div>
+        <!-- TAB DASHBOARD -->
+        <div id="tab-dashboard" class="tab-pane space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50">
+                    <span class="text-xs uppercase text-slate-400 font-semibold">Devis Enregistrés</span>
+                    <h3 class="text-2xl font-bold text-sky-400 mt-2" id="stat-quotes-count">0</h3>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50">
+                    <span class="text-xs uppercase text-slate-400 font-semibold">Total Devis (TTC)</span>
+                    <h3 class="text-2xl font-bold text-emerald-400 mt-2" id="stat-revenue">0.00 €</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB QUOTES -->
+        <div id="tab-quotes" class="tab-pane hidden space-y-6">
+            <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-4 shadow-xl overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs uppercase text-slate-400 border-b border-slate-700 pb-2">
+                        <tr>
+                            <th class="p-3">N° Devis</th>
+                            <th class="p-3">Client</th>
+                            <th class="p-3">Total TTC</th>
+                            <th class="p-3">Statut</th>
+                            <th class="p-3 text-right">Lien Client</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quotes-list" class="divide-y divide-slate-700/50"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL -->
+    <div id="modal-quote" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-white">Nouveau Devis</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="createQuote(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Nom du Client</label>
+                    <input type="text" id="form-client" required placeholder="ex: TechCorp SARL" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Montant Total TTC (€)</label>
+                    <input type="number" step="0.01" id="form-amount" required placeholder="1440.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">Annuler</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg">Enregistrer</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -53,85 +126,86 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const devisId = urlParams.get('devis');
+        let quotes = [];
 
-        const quoteBody = document.getElementById('quote-body');
-        const quoteTitle = document.getElementById('quote-title');
-        const quoteActions = document.getElementById('quote-actions');
-        const statusMsg = document.getElementById('status-message');
-
-        let currentQuote = null;
-
-        async function loadQuote() {
-            if (!devisId) {
-                quoteTitle.innerText = "Lien Invalide";
-                quoteBody.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-center">Aucun numéro de devis spécifié dans l'URL.</div>`;
-                return;
-            }
-
-            const { data, error } = await supabaseClient
-                .from('devis')
-                .select('*')
-                .eq('id', devisId)
-                .single();
-
-            if (error || !data) {
-                quoteTitle.innerText = "Devis introuvable";
-                quoteBody.innerHTML = `<div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-center">Ce devis n'existe pas ou a été supprimé.</div>`;
-                return;
-            }
-
-            currentQuote = data;
-            quoteTitle.innerText = `Devis #${data.id}`;
-            quoteBody.innerHTML = `
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                    <div class="flex justify-between"><span class="text-slate-400">Client / Entreprise :</span> <strong class="text-white">${data.client_name || data.client}</strong></div>
-                    <div class="flex justify-between"><span class="text-slate-400">Service :</span> <strong class="text-white">${data.service || 'Infrastructure Cloud'}</strong></div>
-                    <div class="flex justify-between border-t border-slate-800 pt-2"><span class="text-slate-400">Montant Total TTC :</span> <strong class="text-emerald-400 text-base">${data.amount_ttc || data.amount} €</strong></div>
-                </div>
-            `;
-
-            if (data.status === 'SENT' || data.status === 'EN_ATTENTE') {
-                quoteActions.classList.remove('hidden');
-            } else {
-                statusMsg.className = "p-4 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-300 text-center font-medium block";
-                statusMsg.innerHTML = `Ce devis a déjà été traité (Statut : <strong>${data.status}</strong>).`;
-            }
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).classList.add('bg-sky-600', 'text-white');
+            document.getElementById('btn-' + tabName).classList.remove('text-slate-400');
+            if(tabName === 'quotes') loadQuotesFromDB();
         }
 
-        async function handleResponse(status) {
-            const newStatus = status === 'ACCEPTED' ? 'ACCEPTED' : 'REFUSED';
+        function toggleModal(show) {
+            const modal = document.getElementById('modal-quote');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        async function loadQuotesFromDB() {
+            const { data, error } = await supabaseClient
+                .from('devis')
+                .select('*');
+
+            if (error) {
+                console.error("Erreur de chargement :", error);
+                return;
+            }
+
+            quotes = data || [];
+            renderQuotes();
+        }
+
+        async function createQuote(e) {
+            e.preventDefault();
+            const client = document.getElementById('form-client').value;
+            const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
+            const newId = 'DEV-2026-' + Math.floor(100 + Math.random() * 900);
 
             const { error } = await supabaseClient
                 .from('devis')
-                .update({ status: newStatus })
-                .eq('id', devisId);
+                .insert([{ id: newId, client_name: client, amount_ttc: amount, status: 'SENT' }]);
 
             if (error) {
-                alert("Erreur lors de la mise à jour du devis.");
+                alert("Erreur lors de la création du devis : " + error.message);
                 return;
             }
 
-            if (newStatus === 'ACCEPTED') {
-                await supabaseClient.from('factures').insert([
-                    { 
-                        id: 'FAC-' + devisId.replace('DEV-', ''), 
-                        client_name: currentQuote.client_name || currentQuote.client, 
-                        amount_ttc: currentQuote.amount_ttc || currentQuote.amount, 
-                        status: 'PENDING' 
-                    }
-                ]);
-            }
-
-            quoteActions.classList.add('hidden');
-            statusMsg.className = `p-4 rounded-xl text-center font-medium block ${newStatus === 'ACCEPTED' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'}`;
-            statusMsg.innerHTML = newStatus === 'ACCEPTED' 
-                ? `<i class="fa-solid fa-circle-check text-xl mb-1"></i><br>Merci ! Le devis <strong>#${devisId}</strong> a été validé et signé. Votre facture a été générée.` 
-                : `Le devis <strong>#${devisId}</strong> a été refusé.`;
+            toggleModal(false);
+            e.target.reset();
+            showTab('quotes');
         }
 
-        loadQuote();
+        async function initDashboard() {
+            const { data } = await supabaseClient.from('devis').select('*');
+            if(data) {
+                document.getElementById('stat-quotes-count').innerText = data.length;
+                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || 0), 0);
+                document.getElementById('stat-revenue').innerText = total.toFixed(2) + ' €';
+            }
+        }
+
+        function renderQuotes() {
+            document.getElementById('quotes-list').innerHTML = quotes.map(q => `
+                <tr>
+                    <td class="p-3 font-mono-code font-bold text-sky-400">${q.id}</td>
+                    <td class="p-3 text-white font-medium">${q.client_name || q.client}</td>
+                    <td class="p-3 font-bold">${q.amount_ttc || q.amount} €</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
+                    <td class="p-3 text-right">
+                        <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
+                            <i class="fa-solid fa-copy mr-1"></i>Copier Lien
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        initDashboard();
     </script>
 </body>
 </html>
