@@ -8,8 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -32,15 +34,15 @@
             </div>
 
             <nav class="space-y-1">
-                <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-sky-600 text-white">
+                <button onclick="window.showTab('dashboard')" id="btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-sky-600 text-white">
                     <i class="fa-solid fa-chart-pie w-5"></i><span>Tableau de bord</span>
                 </button>
-                <button onclick="showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                <button onclick="window.showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
                     <i class="fa-solid fa-file-contract w-5"></i><span>Devis Infrastructure</span>
                 </button>
-                <button onclick="showTab('qrcode')" id="btn-qrcode" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
-    <i class="fa-solid fa-qrcode w-5"></i><span>Générateur QR Code</span>
-</button>
+                <button onclick="window.showTab('qrcode')" id="btn-qrcode" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-qrcode w-5"></i><span>Générateur QR Code</span>
+                </button>
             </nav>
         </div>
 
@@ -62,7 +64,7 @@
                 <h2 class="text-2xl font-bold text-white">Panneau de Contrôle</h2>
                 <p class="text-sm text-slate-400">Gestion des devis et facturation en temps réel.</p>
             </div>
-            <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
+            <button onclick="window.toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
                 <i class="fa-solid fa-plus"></i><span>Nouveau Devis</span>
             </button>
         </div>
@@ -91,23 +93,51 @@
                             <th class="p-3">Client</th>
                             <th class="p-3">Total TTC</th>
                             <th class="p-3">Statut</th>
-                            <th class="p-3 text-right">Lien Client</th>
+                            <th class="p-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="quotes-list" class="divide-y divide-slate-700/50"></tbody>
                 </table>
             </div>
         </div>
+
+        <!-- TAB QR CODE -->
+        <div id="tab-qrcode" class="tab-pane hidden space-y-6">
+            <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-6 shadow-xl max-w-xl mx-auto space-y-5">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Générer un QR Code</h3>
+                    <p class="text-xs text-slate-400">Entrez une URL ou un lien de devis pour générer un QR code scannable.</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Lien ou Texte cible</label>
+                        <input type="text" id="qr-input" placeholder="https://votre-site.vercel.app/?devis=DEV-2026-XXX" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    
+                    <button onclick="window.generateQRCode()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Générer le QR Code
+                    </button>
+                </div>
+
+                <div id="qr-result" class="hidden flex flex-col items-center justify-center p-6 bg-slate-950 rounded-xl border border-slate-800 space-y-4">
+                    <div id="qrcode-container" class="bg-white p-4 rounded-xl shadow-md"></div>
+                    <a id="qr-download-btn" download="qrcode.png" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition flex items-center shadow-lg cursor-pointer">
+                        <i class="fa-solid fa-download mr-2"></i>Télécharger en PNG
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- MODAL -->
+    <!-- MODAL DEVIS -->
     <div id="modal-quote" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                 <h3 class="font-bold text-lg text-white">Nouveau Devis</h3>
-                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="window.toggleModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="createQuote(event)" class="space-y-4">
+            <form onsubmit="window.createQuote(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nom du Client</label>
                     <input type="text" id="form-client" required placeholder="ex: TechCorp SARL" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
@@ -117,19 +147,22 @@
                     <input type="number" step="0.01" id="form-amount" required placeholder="1440.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                    <button type="button" onclick="toggleModal(false)" class="px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">Annuler</button>
+                    <button type="button" onclick="window.toggleModal(false)" class="px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">Annuler</button>
                     <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg">Enregistrer</button>
                 </div>
             </form>
         </div>
     </div>
-<script>
+
+    <!-- JAVASCRIPT GLOBAL -->
+    <script>
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let quotes = [];
 
+        // Attachement explicite à window pour garantir la disponibilité dans l'Event Loop
         window.showTab = function(tabName) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-link').forEach(btn => {
@@ -182,7 +215,6 @@
             initDashboard();
         };
 
-        // FONCTION POUR SUPPRIMER UN DEVIS
         window.deleteQuote = async function(id) {
             if (!confirm(`Voulez-vous vraiment supprimer le devis ${id} ?`)) return;
 
@@ -198,6 +230,42 @@
 
             loadQuotesFromDB();
             initDashboard();
+        };
+
+        window.generateQRCode = function() {
+            const inputVal = document.getElementById('qr-input').value.trim();
+            const container = document.getElementById('qrcode-container');
+            const resultBox = document.getElementById('qr-result');
+            const downloadBtn = document.getElementById('qr-download-btn');
+
+            if (!inputVal) {
+                alert("Veuillez entrer un lien ou un texte valide.");
+                return;
+            }
+
+            container.innerHTML = "";
+            resultBox.classList.remove('hidden');
+
+            new QRCode(container, {
+                text: inputVal,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const img = container.querySelector('img');
+                if (img) {
+                    downloadBtn.href = img.src;
+                } else {
+                    const canvas = container.querySelector('canvas');
+                    if (canvas) {
+                        downloadBtn.href = canvas.toDataURL("image/png");
+                    }
+                }
+            }, 200);
         };
 
         async function loadQuotesFromDB() {
@@ -223,63 +291,25 @@
             document.getElementById('quotes-list').innerHTML = quotes.map(q => `
                 <tr>
                     <td class="p-3 font-mono-code font-bold text-sky-400">${q.id}</td>
-                    <td class="p-3 text-white font-medium">${q.client_name || q.client || 'N/A'}</td>
-                    <td class="p-3 font-bold">${q.amount_ttc || q.amount || '0.00'} €</td>
+                    <td class="p-3 text-white font-medium">${q.client_name || 'N/A'}</td>
+                    <td class="p-3 font-bold">${q.amount_ttc || '0.00'} €</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
                     <td class="p-3 text-right space-x-2">
-                        <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
+                        <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold" title="Copier le lien du devis">
                             <i class="fa-solid fa-copy mr-1"></i>Copier Lien
+                        </button>
+                        <button onclick="window.showTab('qrcode'); document.getElementById('qr-input').value = window.location.origin + '/?devis=' + '${q.id}'; window.generateQRCode();" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition text-xs font-semibold" title="Générer un QR Code">
+                            <i class="fa-solid fa-qrcode mr-1"></i>QR Code
                         </button>
                         <button onclick="window.deleteQuote('${q.id}')" class="px-3 py-1.5 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-semibold" title="Supprimer le devis">
                             <i class="fa-solid fa-trash mr-1"></i>Supprimer
                         </button>
-                        <button onclick="window.showTab('qrcode'); document.getElementById('qr-input').value = window.location.origin + '/?devis=' + '${q.id}'; window.generateQRCode();" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition text-xs font-semibold" title="Générer un QR Code">
-    <i class="fa-solid fa-qrcode mr-1"></i>QR Code
-</button>
                     </td>
                 </tr>
             `).join('');
         }
-   
-</button>
-// FONCTION DE GENERATION DE QR CODE
-        window.generateQRCode = function() {
-            const inputVal = document.getElementById('qr-input').value.trim();
-            const container = document.getElementById('qrcode-container');
-            const resultBox = document.getElementById('qr-result');
-            const downloadBtn = document.getElementById('qr-download-btn');
 
-            if (!inputVal) {
-                alert("Veuillez entrer un lien ou un texte valide.");
-                return;
-            }
-
-            container.innerHTML = ""; // Nettoyer l'ancien QR code
-            resultBox.classList.remove('hidden');
-
-            // Génération du QR code avec qrcode.js
-            new QRCode(container, {
-                text: inputVal,
-                width: 200,
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            // Permettre le téléchargement direct après un court délai de rendu
-            setTimeout(() => {
-                const img = container.querySelector('img');
-                if (img) {
-                    downloadBtn.href = img.src;
-                } else {
-                    const canvas = container.querySelector('canvas');
-                    if (canvas) {
-                        downloadBtn.href = canvas.toDataURL("image/png");
-                    }
-                }
-            }, 200);
-        };
+        // Lancement au chargement
         initDashboard();
     </script>
 </body>
