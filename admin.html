@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
@@ -37,6 +38,9 @@
                 <button onclick="showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
                     <i class="fa-solid fa-file-contract w-5"></i><span>Devis Infrastructure</span>
                 </button>
+                <button onclick="showTab('qrcode')" id="btn-qrcode" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+    <i class="fa-solid fa-qrcode w-5"></i><span>Générateur QR Code</span>
+</button>
             </nav>
         </div>
 
@@ -229,11 +233,53 @@
                         <button onclick="window.deleteQuote('${q.id}')" class="px-3 py-1.5 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-semibold" title="Supprimer le devis">
                             <i class="fa-solid fa-trash mr-1"></i>Supprimer
                         </button>
+                        <button onclick="window.showTab('qrcode'); document.getElementById('qr-input').value = window.location.origin + '/?devis=' + '${q.id}'; window.generateQRCode();" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition text-xs font-semibold" title="Générer un QR Code">
+    <i class="fa-solid fa-qrcode mr-1"></i>QR Code
+</button>
                     </td>
                 </tr>
             `).join('');
         }
+   
+</button>
+// FONCTION DE GENERATION DE QR CODE
+        window.generateQRCode = function() {
+            const inputVal = document.getElementById('qr-input').value.trim();
+            const container = document.getElementById('qrcode-container');
+            const resultBox = document.getElementById('qr-result');
+            const downloadBtn = document.getElementById('qr-download-btn');
 
+            if (!inputVal) {
+                alert("Veuillez entrer un lien ou un texte valide.");
+                return;
+            }
+
+            container.innerHTML = ""; // Nettoyer l'ancien QR code
+            resultBox.classList.remove('hidden');
+
+            // Génération du QR code avec qrcode.js
+            new QRCode(container, {
+                text: inputVal,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Permettre le téléchargement direct après un court délai de rendu
+            setTimeout(() => {
+                const img = container.querySelector('img');
+                if (img) {
+                    downloadBtn.href = img.src;
+                } else {
+                    const canvas = container.querySelector('canvas');
+                    if (canvas) {
+                        downloadBtn.href = canvas.toDataURL("image/png");
+                    }
+                }
+            }, 200);
+        };
         initDashboard();
     </script>
 </body>
