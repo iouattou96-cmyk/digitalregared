@@ -119,15 +119,13 @@
             </form>
         </div>
     </div>
-
-   <script>
+<script>
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let quotes = [];
 
-        // Déclaration globale explicite pour éviter l'erreur "not defined"
         window.showTab = function(tabName) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-link').forEach(btn => {
@@ -180,8 +178,26 @@
             initDashboard();
         };
 
+        // FONCTION POUR SUPPRIMER UN DEVIS
+        window.deleteQuote = async function(id) {
+            if (!confirm(`Voulez-vous vraiment supprimer le devis ${id} ?`)) return;
+
+            const { error } = await supabaseClient
+                .from('devis')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Erreur lors de la suppression : " + error.message);
+                return;
+            }
+
+            loadQuotesFromDB();
+            initDashboard();
+        };
+
         async function loadQuotesFromDB() {
-            const { data, error } = await supabaseClient.from('devis').select('*');
+            const { data, error } = await supabaseClient.from('devis').select('*').order('created_at', { ascending: false });
             if (error) {
                 console.error("Erreur de chargement :", error);
                 return;
@@ -206,9 +222,12 @@
                     <td class="p-3 text-white font-medium">${q.client_name || q.client || 'N/A'}</td>
                     <td class="p-3 font-bold">${q.amount_ttc || q.amount || '0.00'} €</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
-                    <td class="p-3 text-right">
+                    <td class="p-3 text-right space-x-2">
                         <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
                             <i class="fa-solid fa-copy mr-1"></i>Copier Lien
+                        </button>
+                        <button onclick="window.deleteQuote('${q.id}')" class="px-3 py-1.5 rounded-lg bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition text-xs font-semibold" title="Supprimer le devis">
+                            <i class="fa-solid fa-trash mr-1"></i>Supprimer
                         </button>
                     </td>
                 </tr>
