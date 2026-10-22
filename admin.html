@@ -121,7 +121,6 @@
     </div>
 
     <script>
-        // CONFIGURATION SUPABASE INTÉGRÉE
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -166,9 +165,17 @@
             const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
             const newId = 'DEV-2026-' + Math.floor(100 + Math.random() * 900);
 
+            // Envoi compatible avec les colonnes 'client' ou 'client_name' et 'amount' ou 'amount_ttc'
             const { error } = await supabaseClient
                 .from('devis')
-                .insert([{ id: newId, client_name: client, amount_ttc: amount, status: 'SENT' }]);
+                .insert([{ 
+                    id: newId, 
+                    client_name: client, 
+                    client: client, 
+                    amount_ttc: amount, 
+                    amount: amount, 
+                    status: 'SENT' 
+                }]);
 
             if (error) {
                 alert("Erreur lors de la création du devis : " + error.message);
@@ -184,7 +191,7 @@
             const { data } = await supabaseClient.from('devis').select('*');
             if(data) {
                 document.getElementById('stat-quotes-count').innerText = data.length;
-                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || 0), 0);
+                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || curr.amount || 0), 0);
                 document.getElementById('stat-revenue').innerText = total.toFixed(2) + ' €';
             }
         }
@@ -193,8 +200,8 @@
             document.getElementById('quotes-list').innerHTML = quotes.map(q => `
                 <tr>
                     <td class="p-3 font-mono-code font-bold text-sky-400">${q.id}</td>
-                    <td class="p-3 text-white font-medium">${q.client_name || q.client}</td>
-                    <td class="p-3 font-bold">${q.amount_ttc || q.amount} €</td>
+                    <td class="p-3 text-white font-medium">${q.client_name || q.client || 'N/A'}</td>
+                    <td class="p-3 font-bold">${q.amount_ttc || q.amount || '0.00'} €</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
                     <td class="p-3 text-right">
                         <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
