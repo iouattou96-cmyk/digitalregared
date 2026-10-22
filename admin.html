@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexusERP - Admin Console</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-    // Remplacez ces valeurs par vos vraies informations Supabase
-    const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co/rest/v1/';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
@@ -35,19 +30,12 @@
                 </div>
             </div>
 
-            <!-- NAVIGATION -->
             <nav class="space-y-1">
                 <button onclick="showTab('dashboard')" id="btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-sky-600 text-white">
                     <i class="fa-solid fa-chart-pie w-5"></i><span>Tableau de bord</span>
                 </button>
                 <button onclick="showTab('quotes')" id="btn-quotes" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
                     <i class="fa-solid fa-file-contract w-5"></i><span>Devis Infrastructure</span>
-                </button>
-                <button onclick="showTab('billing')" id="btn-billing" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-solid fa-file-invoice-dollar w-5"></i><span>Facturation</span>
-                </button>
-                <button onclick="showTab('linux')" id="btn-linux" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                    <i class="fa-brands fa-linux w-5"></i><span>Utilisateurs Linux IAM</span>
                 </button>
             </nav>
         </div>
@@ -58,44 +46,38 @@
                     <span>Base de données</span>
                     <span class="text-emerald-400 font-bold">ONLINE</span>
                 </div>
-                <div class="text-[10px] text-slate-500">Supabase PostgreSQL Connected</div>
+                <div class="text-[10px] text-slate-500">Supabase Connected</div>
             </div>
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <main class="flex-1 p-6 md:p-8 overflow-y-auto">
-        
-        <!-- HEADER BAR -->
         <div class="flex justify-between items-center pb-6 mb-6 border-b border-slate-800">
             <div>
                 <h2 class="text-2xl font-bold text-white">Panneau de Contrôle</h2>
-                <p class="text-sm text-slate-400">Gérez vos prestations, vos factures et votre infrastructure Linux.</p>
+                <p class="text-sm text-slate-400">Gestion des devis et facturation en temps réel.</p>
             </div>
             <button onclick="toggleModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
                 <i class="fa-solid fa-plus"></i><span>Nouveau Devis</span>
             </button>
         </div>
 
-        <!-- SECTION 1: DASHBOARD -->
+        <!-- TAB DASHBOARD -->
         <div id="tab-dashboard" class="tab-pane space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Facturation Validée</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50">
+                    <span class="text-xs uppercase text-slate-400 font-semibold">Devis Enregistrés</span>
+                    <h3 class="text-2xl font-bold text-sky-400 mt-2" id="stat-quotes-count">0</h3>
+                </div>
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50">
+                    <span class="text-xs uppercase text-slate-400 font-semibold">Total Devis (TTC)</span>
                     <h3 class="text-2xl font-bold text-emerald-400 mt-2" id="stat-revenue">0.00 €</h3>
-                </div>
-                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Devis en Attente</span>
-                    <h3 class="text-2xl font-bold text-amber-400 mt-2" id="stat-pending">0.00 €</h3>
-                </div>
-                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700/50 shadow-sm">
-                    <span class="text-xs uppercase text-slate-400 font-semibold tracking-wider">Comptes Linux Actifs</span>
-                    <h3 class="text-2xl font-bold text-sky-400 mt-2" id="stat-users">0</h3>
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 2: QUOTES -->
+        <!-- TAB QUOTES -->
         <div id="tab-quotes" class="tab-pane hidden space-y-6">
             <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-4 shadow-xl overflow-x-auto">
                 <table class="w-full text-left text-sm text-slate-300">
@@ -103,7 +85,6 @@
                         <tr>
                             <th class="p-3">N° Devis</th>
                             <th class="p-3">Client</th>
-                            <th class="p-3">Service</th>
                             <th class="p-3">Total TTC</th>
                             <th class="p-3">Statut</th>
                             <th class="p-3 text-right">Lien Client</th>
@@ -113,35 +94,9 @@
                 </table>
             </div>
         </div>
-
-        <!-- SECTION 3: BILLING -->
-        <div id="tab-billing" class="tab-pane hidden space-y-6">
-            <div class="bg-slate-800 border border-slate-700/50 rounded-2xl p-4 shadow-xl overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="text-xs uppercase text-slate-400 border-b border-slate-700 pb-2">
-                        <tr>
-                            <th class="p-3">N° Facture</th>
-                            <th class="p-3">Client</th>
-                            <th class="p-3">Total TTC</th>
-                            <th class="p-3">Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoices-list" class="divide-y divide-slate-700/50"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- SECTION 4: LINUX IAM -->
-        <div id="tab-linux" class="tab-pane hidden space-y-6">
-            <div class="bg-slate-800 border border-slate-700/50 p-6 rounded-2xl space-y-4">
-                <h3 class="text-lg font-bold text-amber-400 flex items-center"><i class="fa-brands fa-linux mr-2"></i>Clés SSH & Provisionnement UNIX</h3>
-                <div class="bg-slate-950 p-4 rounded-xl font-mono-code text-xs text-emerald-400 border border-slate-800" id="linux-list"></div>
-            </div>
-        </div>
-
     </main>
 
-    <!-- MODAL CREATION DEVIS -->
+    <!-- MODAL -->
     <div id="modal-quote" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -154,55 +109,35 @@
                     <input type="text" id="form-client" required placeholder="ex: TechCorp SARL" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Service / Intitulé</label>
-                    <input type="text" id="form-service" required placeholder="ex: Deploiement Cloud Linux" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
-                </div>
-                <div>
                     <label class="block text-xs text-slate-400 mb-1">Montant Total TTC (€)</label>
                     <input type="number" step="0.01" id="form-amount" required placeholder="1440.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
                     <button type="button" onclick="toggleModal(false)" class="px-4 py-2 rounded-xl border border-slate-800 text-sm text-slate-300">Annuler</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg">Créer & Générer</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg">Enregistrer</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        let quotes = JSON.parse(localStorage.getItem('quotes')) || [
-            { id: 'DEV-2026-001', client: 'TechCorp SARL', service: 'Hardening Server Linux', amount: '1440.00', status: 'EN_ATTENTE' }
-        ];
+        // CONFIGURATION SUPABASE (Remplacez par vos informations)
+        const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let invoices = JSON.parse(localStorage.getItem('invoices')) || [
-            { id: 'FAC-2026-001', client: 'TechCorp SARL', amount: '1440.00', status: 'PAYEE' }
-        ];
-
-        let linuxUsers = JSON.parse(localStorage.getItem('linuxUsers')) || [
-            { username: 'techcorp_admin', uid: 1001, sshKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...' }
-        ];
+        let quotes = [];
 
         function showTab(tabName) {
-            // Masquer tous les onglets
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-            
-            // Réinitialiser le style des boutons
             document.querySelectorAll('.nav-link').forEach(btn => {
                 btn.classList.remove('bg-sky-600', 'text-white');
                 btn.classList.add('text-slate-400');
             });
-
-            // Afficher l'onglet sélectionné
-            const targetPane = document.getElementById('tab-' + tabName);
-            if (targetPane) targetPane.classList.remove('hidden');
-
-            // Mettre en valeur le bouton cliqué
-            const targetBtn = document.getElementById('btn-' + tabName);
-            if (targetBtn) {
-                targetBtn.classList.add('bg-sky-600', 'text-white');
-                targetBtn.classList.remove('text-slate-400');
-            }
-            render();
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).classList.add('bg-sky-600', 'text-white');
+            document.getElementById('btn-' + tabName).classList.remove('text-slate-400');
+            if(tabName === 'quotes') loadQuotesFromDB();
         }
 
         function toggleModal(show) {
@@ -211,74 +146,66 @@
             else modal.classList.add('hidden');
         }
 
-        function createQuote(e) {
+        async function loadQuotesFromDB() {
+            const { data, error } = await supabaseClient
+                .from('devis')
+                .select('*');
+
+            if (error) {
+                console.error("Erreur de chargement :", error);
+                return;
+            }
+
+            quotes = data || [];
+            renderQuotes();
+        }
+
+        async function createQuote(e) {
             e.preventDefault();
             const client = document.getElementById('form-client').value;
-            const service = document.getElementById('form-service').value;
             const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
-            
-            const newId = 'DEV-2026-' + String(quotes.length + 1).padStart(3, '0');
+            const newId = 'DEV-2026-' + Math.floor(100 + Math.random() * 900);
 
-            quotes.push({ id: newId, client, service, amount, status: 'EN_ATTENTE' });
-            localStorage.setItem('quotes', JSON.stringify(quotes));
+            const { error } = await supabaseClient
+                .from('devis')
+                .insert([{ id: newId, client_name: client, amount_ttc: amount, status: 'SENT' }]);
+
+            if (error) {
+                alert("Erreur lors de la création du devis : " + error.message);
+                return;
+            }
 
             toggleModal(false);
             e.target.reset();
             showTab('quotes');
         }
 
-        function copyClientLink(quoteId) {
-            const link = window.location.origin + '/?devis=' + quoteId;
-            navigator.clipboard.writeText(link);
-            alert("Lien client copié !\n\n" + link);
+        async function initDashboard() {
+            const { data } = await supabaseClient.from('devis').select('*');
+            if(data) {
+                document.getElementById('stat-quotes-count').innerText = data.length;
+                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || 0), 0);
+                document.getElementById('stat-revenue').innerText = total.toFixed(2) + ' €';
+            }
         }
 
-        function render() {
-            // Rendu Devis
+        function renderQuotes() {
             document.getElementById('quotes-list').innerHTML = quotes.map(q => `
                 <tr>
                     <td class="p-3 font-mono-code font-bold text-sky-400">${q.id}</td>
-                    <td class="p-3 text-white font-medium">${q.client}</td>
-                    <td class="p-3 text-slate-400 text-xs">${q.service}</td>
-                    <td class="p-3 font-bold">${q.amount} €</td>
+                    <td class="p-3 text-white font-medium">${q.client_name || q.client}</td>
+                    <td class="p-3 font-bold">${q.amount_ttc || q.amount} €</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/10 text-amber-400">${q.status}</span></td>
                     <td class="p-3 text-right">
-                        <button onclick="copyClientLink('${q.id}')" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
+                        <button onclick="navigator.clipboard.writeText(window.location.origin + '/?devis=' + '${q.id}'); alert('Lien copié !');" class="px-3 py-1.5 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white transition text-xs font-semibold">
                             <i class="fa-solid fa-copy mr-1"></i>Copier Lien
                         </button>
                     </td>
                 </tr>
             `).join('');
-
-            // Rendu Factures
-            document.getElementById('invoices-list').innerHTML = invoices.map(i => `
-                <tr>
-                    <td class="p-3 font-mono-code font-bold text-emerald-400">${i.id}</td>
-                    <td class="p-3 text-white font-medium">${i.client}</td>
-                    <td class="p-3 font-bold">${i.amount} €</td>
-                    <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400">${i.status}</span></td>
-                </tr>
-            `).join('');
-
-            // Rendu Linux IAM
-            document.getElementById('linux-list').innerHTML = linuxUsers.map(u => `
-                <div class="mb-2 pb-2 border-b border-slate-800">
-                    <div>USER: <strong class="text-white">${u.username}</strong> (UID: ${u.uid})</div>
-                    <div>SSH KEY: ${u.sshKey}</div>
-                </div>
-            `).join('');
-
-            // KPIs
-            const totalRev = invoices.reduce((sum, item) => sum + parseFloat(item.amount), 0);
-            const totalPending = quotes.reduce((sum, item) => sum + parseFloat(item.amount), 0);
-
-            document.getElementById('stat-revenue').innerText = totalRev.toFixed(2) + ' €';
-            document.getElementById('stat-pending').innerText = totalPending.toFixed(2) + ' €';
-            document.getElementById('stat-users').innerText = linuxUsers.length;
         }
 
-        // Initialisation
-        showTab('dashboard');
+        initDashboard();
     </script>
 </body>
 </html>
