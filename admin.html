@@ -165,17 +165,25 @@
             const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
             const newId = 'DEV-2026-' + Math.floor(100 + Math.random() * 900);
 
-            // Envoi compatible avec les colonnes 'client' ou 'client_name' et 'amount' ou 'amount_ttc'
+            // Envoi strict basé uniquement sur les colonnes standardisées
             const { error } = await supabaseClient
                 .from('devis')
                 .insert([{ 
                     id: newId, 
                     client_name: client, 
-                    client: client, 
                     amount_ttc: amount, 
-                    amount: amount, 
                     status: 'SENT' 
                 }]);
+
+            if (error) {
+                alert("Erreur lors de la création du devis : " + error.message);
+                return;
+            }
+
+            toggleModal(false);
+            e.target.reset();
+            showTab('quotes');
+        }
 
             if (error) {
                 alert("Erreur lors de la création du devis : " + error.message);
