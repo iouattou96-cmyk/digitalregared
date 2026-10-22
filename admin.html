@@ -120,14 +120,15 @@
         </div>
     </div>
 
-    <script>
+   <script>
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let quotes = [];
 
-        function showTab(tabName) {
+        // Déclaration globale explicite pour éviter l'erreur "not defined"
+        window.showTab = function(tabName) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-link').forEach(btn => {
                 btn.classList.remove('bg-sky-600', 'text-white');
@@ -137,35 +138,28 @@
             document.getElementById('btn-' + tabName).classList.add('bg-sky-600', 'text-white');
             document.getElementById('btn-' + tabName).classList.remove('text-slate-400');
             if(tabName === 'quotes') loadQuotesFromDB();
-        }
+        };
 
-        function toggleModal(show) {
+        window.toggleModal = function(show) {
             const modal = document.getElementById('modal-quote');
             if (show) modal.classList.remove('hidden');
             else modal.classList.add('hidden');
-        }
+        };
 
-        async function loadQuotesFromDB() {
-            const { data, error } = await supabaseClient
-                .from('devis')
-                .select('*');
-
-            if (error) {
-                console.error("Erreur de chargement :", error);
+        window.createQuote = async function(e) {
+            e.preventDefault();
+            const clientInput = document.getElementById('form-client').value;
+            const amountInput = document.getElementById('form-amount').value;
+            
+            if (!clientInput || !amountInput) {
+                alert("Veuillez remplir tous les champs.");
                 return;
             }
 
-            quotes = data || [];
-            renderQuotes();
-        }
-
-        async function createQuote(e) {
-            e.preventDefault();
-            const client = document.getElementById('form-client').value;
-            const amount = parseFloat(document.getElementById('form-amount').value).toFixed(2);
+            const client = clientInput.trim();
+            const amount = parseFloat(amountInput).toFixed(2);
             const newId = 'DEV-2026-' + Math.floor(100 + Math.random() * 900);
 
-            // Envoi strict basé uniquement sur les colonnes standardisées
             const { error } = await supabaseClient
                 .from('devis')
                 .insert([{ 
@@ -180,26 +174,27 @@
                 return;
             }
 
-            toggleModal(false);
+            window.toggleModal(false);
             e.target.reset();
-            showTab('quotes');
-        }
+            loadQuotesFromDB();
+            initDashboard();
+        };
 
+        async function loadQuotesFromDB() {
+            const { data, error } = await supabaseClient.from('devis').select('*');
             if (error) {
-                alert("Erreur lors de la création du devis : " + error.message);
+                console.error("Erreur de chargement :", error);
                 return;
             }
-
-            toggleModal(false);
-            e.target.reset();
-            showTab('quotes');
+            quotes = data || [];
+            renderQuotes();
         }
 
         async function initDashboard() {
             const { data } = await supabaseClient.from('devis').select('*');
             if(data) {
                 document.getElementById('stat-quotes-count').innerText = data.length;
-                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || curr.amount || 0), 0);
+                const total = data.reduce((acc, curr) => acc + parseFloat(curr.amount_ttc || 0), 0);
                 document.getElementById('stat-revenue').innerText = total.toFixed(2) + ' €';
             }
         }
