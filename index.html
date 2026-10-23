@@ -15,17 +15,16 @@
         body { font-family: 'Inter', sans-serif; }
         .font-mono-code { font-family: 'Fira Code', monospace; }
 
-        /* Styles spécifiques pour l'impression A4 et PDF */
         @media print {
             .no-print { display: none !important; }
-            body { background: white !important; color: black !important; p: 0 !important; }
-            .invoice-card { border: none !important; shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .invoice-card { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
         }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col items-center justify-center p-4 md:p-8">
 
-    <!-- BARRE D'ACTIONS FLOOTTANTE (Masquée à l'impression) -->
+    <!-- BARRE D'ACTIONS FLOTTANTE -->
     <div class="no-print max-w-4xl w-full mb-4 flex justify-between items-center">
         <a href="/admin.html" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition flex items-center gap-1">
             <i class="fa-solid fa-arrow-left"></i> Retour Admin
@@ -42,10 +41,10 @@
         </div>
     </div>
 
-    <!-- DOCUMENT A4 (FACTURE / DEVIS) -->
+    <!-- CARTE PRINCIPALE -->
     <div class="invoice-card bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-8 md:p-12 shadow-xl space-y-8">
         
-        <!-- EN-TÊTE DE LA FACTURE -->
+        <!-- EN-TÊTE -->
         <div class="flex justify-between items-start border-b border-slate-100 pb-8">
             <div>
                 <div class="flex items-center space-x-3 mb-2">
@@ -55,8 +54,6 @@
                     <span class="text-xl font-bold text-slate-900 tracking-tight">NexusERP</span>
                 </div>
                 <p class="text-xs text-slate-500">Solutions Infrastructure & IAM</p>
-                <p class="text-xs text-slate-500">SIRET : 890 123 456 00012</p>
-                <p class="text-xs text-slate-500">TVA Intra : FR 32 890123456</p>
             </div>
 
             <div class="text-right space-y-2">
@@ -69,7 +66,7 @@
             </div>
         </div>
 
-        <!-- COORDONNÉES ÉMETTEUR & CLIENT -->
+        <!-- COORDONNÉES -->
         <div class="grid grid-cols-2 gap-8 text-xs">
             <div class="space-y-1">
                 <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-2">Émetteur</span>
@@ -82,11 +79,11 @@
             <div class="space-y-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-2">Facturé à</span>
                 <p class="font-bold text-slate-800 text-sm" id="client-name">Chargement...</p>
-                <p class="text-slate-600" id="client-address">Client Professionnel</p>
+                <p class="text-slate-600">Client Professionnel</p>
             </div>
         </div>
 
-        <!-- TABLEAU DES PRESTATIONS -->
+        <!-- TABLEAU -->
         <div class="overflow-hidden border border-slate-200 rounded-xl">
             <table class="w-full text-left text-xs text-slate-700">
                 <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[10px]">
@@ -97,13 +94,11 @@
                         <th class="p-3.5 text-right">Total HT</th>
                     </tr>
                 </thead>
-                <tbody id="items-list" class="divide-y divide-slate-100 font-medium">
-                    <!-- Injecté dynamiquement -->
-                </tbody>
+                <tbody id="items-list" class="divide-y divide-slate-100 font-medium"></tbody>
             </table>
         </div>
 
-        <!-- TOTALS & Taux TVA -->
+        <!-- TOTAUX -->
         <div class="flex justify-end pt-2">
             <div class="w-full max-w-xs space-y-2 text-xs">
                 <div class="flex justify-between text-slate-500">
@@ -121,16 +116,15 @@
             </div>
         </div>
 
-        <!-- PIED DE PAGE LÉGAL -->
+        <!-- PIED DE PAGE -->
         <div class="border-t border-slate-100 pt-6 text-[10px] text-slate-400 text-center space-y-1">
             <p>Conditions de règlement : Paiement à réception. Pas d'escompte pour règlement anticipé.</p>
-            <p>En cas de retard de paiement, pénalités au taux annuel de 10% plus indemnité forfaitaire de recouvrement de 40 €.</p>
             <p class="font-semibold text-slate-500">Merci pour votre confiance - NexusERP Solutions</p>
         </div>
 
     </div>
 
-    <!-- SCRIPT DE CHARGEMENT SUPABASE -->
+    <!-- SCRIPT -->
     <script>
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
@@ -165,4 +159,104 @@
             document.getElementById('doc-type-badge').innerText = type;
             document.getElementById('doc-id').innerText = doc.id;
             document.getElementById('client-name').innerText = doc.client_name;
-            document.getElementById('doc-date').innerText = '
+            document.getElementById('doc-date').innerText = 'Date : ' + new Date(doc.created_at).toLocaleDateString('fr-FR');
+
+            let totalHT = 0;
+
+            if (items.length > 0) {
+                document.getElementById('items-list').innerHTML = items.map(item => {
+                    const lineTotal = item.quantity * item.unit_price;
+                    totalHT += lineTotal;
+                    return `
+                        <tr>
+                            <td class="p-3.5 text-slate-800 font-medium">${item.description}</td>
+                            <td class="p-3.5 text-center">${item.quantity}</td>
+                            <td class="p-3.5 text-right font-mono-code">${parseFloat(item.unit_price).toFixed(2)} €</td>
+                            <td class="p-3.5 text-right font-mono-code font-bold text-slate-800">${lineTotal.toFixed(2)} €</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                const ttc = parseFloat(doc.amount_ttc || 0);
+                totalHT = ttc / 1.20;
+                document.getElementById('items-list').innerHTML = `
+                    <tr>
+                        <td class="p-3.5 text-slate-800 font-medium">Prestations de services et d'infrastructure (${type})</td>
+                        <td class="p-3.5 text-center">1</td>
+                        <td class="p-3.5 text-right font-mono-code">${totalHT.toFixed(2)} €</td>
+                        <td class="p-3.5 text-right font-mono-code font-bold text-slate-800">${totalHT.toFixed(2)} €</td>
+                    </tr>
+                `;
+            }
+
+            const totalTTC = totalHT * 1.20;
+            const totalTVA = totalTTC - totalHT;
+
+            document.getElementById('total-ht').innerText = totalHT.toFixed(2) + ' €';
+            document.getElementById('total-tva').innerText = totalTVA.toFixed(2) + ' €';
+            document.getElementById('doc-amount').innerText = totalTTC.toFixed(2) + ' €';
+
+            const statusBadge = document.getElementById('status-badge');
+            const acceptSection = document.getElementById('accept-section');
+
+            if (type === 'DEVIS') {
+                if (doc.status === 'ACCEPTED') {
+                    statusBadge.className = "inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200";
+                    statusBadge.innerText = "DEVIS ACCEPTÉ";
+                    acceptSection.classList.add('hidden');
+                } else {
+                    statusBadge.className = "inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200";
+                    statusBadge.innerText = "EN ATTENTE D'ACCEPTATION";
+                    acceptSection.classList.remove('hidden');
+                }
+            } else {
+                statusBadge.className = "inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-sky-50 text-sky-600 border border-sky-200";
+                statusBadge.innerText = "FACTURE PAYÉE";
+                acceptSection.classList.add('hidden');
+            }
+        }
+
+        window.acceptQuote = async function() {
+            if (!currentDocument || !isQuote) return;
+
+            const btn = document.getElementById('btn-accept');
+            btn.disabled = true;
+            btn.innerText = "Conversion en facture...";
+
+            const quoteId = currentDocument.id;
+            const invoiceId = quoteId.replace('DEV-', 'FAC-');
+
+            await supabaseClient.from('devis').update({ status: 'ACCEPTED' }).eq('id', quoteId);
+
+            const { data: items } = await supabaseClient.from('document_items').select('*').eq('doc_id', quoteId);
+
+            await supabaseClient.from('factures').insert([{
+                id: invoiceId,
+                client_name: currentDocument.client_name,
+                amount_ttc: currentDocument.amount_ttc,
+                status: 'PAID'
+            }]);
+
+            if (items && items.length > 0) {
+                const newItems = items.map(item => ({
+                    doc_id: invoiceId,
+                    description: item.description,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price
+                }));
+                await supabaseClient.from('document_items').insert(newItems);
+            }
+
+            alert("Devis accepté ! La facture " + invoiceId + " a été générée.");
+            loadDocumentFromURL();
+        };
+
+        function showError(msg) {
+            document.getElementById('doc-type-badge').innerText = 'ERREUR';
+            document.getElementById('client-name').innerText = msg;
+        }
+
+        loadDocumentFromURL();
+    </script>
+</body>
+</html>
