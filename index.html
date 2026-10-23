@@ -178,29 +178,62 @@
             }
         }
 
-        window.acceptQuote = async function() {
-            if (!currentDocument || !isQuote) return;
+       window.acceptQuote = async function() {
+    if (!currentDocument || !isQuote) return;
 
-            const btn = document.getElementById('btn-accept');
-            btn.disabled = true;
-            btn.innerText = "Validation en cours...";
+    const btn = document.getElementById('btn-accept');
+    btn.disabled = true;
+    btn.innerText = "Conversion en facture...";
 
-            // Mettre à jour le statut du devis dans Supabase
-            const { error } = await supabaseClient
-                .from('devis')
-                .update({ status: 'ACCEPTED' })
-                .eq('id', currentDocument.id);
+    const quoteId = currentDocument.id;
+    const invoiceId = quoteId.replace('DEV-', 'FAC-');
 
-            if (error) {
-                alert("Erreur lors de la validation : " + error.message);
-                btn.disabled = false;
-                btn.innerText = "Accepter et Valider le Devis";
-                return;
-            }
+    // 1. Mettre à jour le statut du devis en 'ACCEPTED'
+    const { error: quoteErr } = await supabaseClient
+        .from('devis')
+        .update({ status: 'ACCEPTED' })
+        .eq('id', quoteId);
 
-            alert("Le devis a été accepté avec succès !");
-            loadDocumentFromURL();
-        };
+    if (quoteErr) {
+        alert("Erreur lors de la mise à jour du devis : " + quoteErr.message);
+        btn.disabled = false;
+        btn.innerText = "Accepter et Valider le Devis";
+        return;
+    }
+
+    // 2. Récupérer les lignes de prestations associées au devis
+    const { data: items } = await supabaseClient
+        .from('document_items')
+        .select('*')
+        .eq('doc_id', quoteId);
+
+    // 3. Créer la nouvelle facture dans la table 'factures'
+    const { error: invoiceErr } = await supabaseClient
+        .from('factures')
+        .insert([{
+            id: invoiceId,
+            client_name: currentDocument.client_name,
+            amount_ttc: currentDocument.amount_ttc,
+            status: 'PENDING'
+        }]);
+
+    if (invoiceErr) {
+        console.error("Erreur création facture :", invoiceErr);
+    } else if (items && items.length > 0) {
+        // 4. Copier les lignes de services pour la nouvelle facture
+        const newItems = items.map(item => ({
+            doc_id: invoiceId,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.unit_price
+        }));
+
+        await supabaseClient.from('document_items').insert(newItems);
+    }
+
+    alert("Le devis a été accepté et la facture " + invoiceId + " a été générée !");
+    loadDocumentFromURL();
+};
 
         function showError(msg) {
             document.getElementById('doc-type-badge').innerText = 'ERREUR';
