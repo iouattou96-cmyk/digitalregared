@@ -169,14 +169,16 @@
             if(tabName === 'invoices') loadInvoicesFromDB();
         };
 
-        window.openModal = function(type) {
-            document.getElementById('form-type').value = type;
-            document.getElementById('modal-title').innerText = type === 'quote' ? 'Nouveau Devis' : 'Nouvelle Facture';
-            document.getElementById('items-container.innerHTML').innerHTML = '';
-            window.addItemRow(); // Ajoute une ligne par défaut
-            document.getElementById('modal-container').classList.remove('hidden');
-        };
-
+      window.openModal = function(type) {
+    document.getElementById('form-type').value = type;
+    document.getElementById('modal-title').innerText = type === 'quote' ? 'Nouveau Devis' : 'Nouvelle Facture';
+    
+    // CORRECTION ICI : Réinitialisation propre du conteneur de lignes
+    document.getElementById('items-container').innerHTML = '';
+    
+    window.addItemRow(); // Ajoute la première ligne de service par défaut
+    document.getElementById('modal-container').classList.remove('hidden');
+};
         window.closeModal = function() {
             document.getElementById('modal-container').classList.add('hidden');
             document.getElementById('generic-form').reset();
