@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,89 +11,126 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .font-mono-code { font-family: 'Fira Code', monospace; }
+
+        /* Styles spécifiques pour l'impression A4 et PDF */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; p: 0 !important; }
+            .invoice-card { border: none !important; shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+        }
     </style>
 </head>
-<body class="h-full bg-slate-900 text-slate-100 flex items-center justify-center p-4 md:p-8">
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col items-center justify-center p-4 md:p-8">
 
-    <div class="bg-slate-950 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 md:p-8 shadow-2xl space-y-6">
+    <!-- BARRE D'ACTIONS FLOOTTANTE (Masquée à l'impression) -->
+    <div class="no-print max-w-4xl w-full mb-4 flex justify-between items-center">
+        <a href="/admin.html" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition flex items-center gap-1">
+            <i class="fa-solid fa-arrow-left"></i> Retour Admin
+        </a>
+        <div class="flex gap-2">
+            <div id="accept-section" class="hidden">
+                <button onclick="window.acceptQuote()" id="btn-accept" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl shadow-md transition text-xs flex items-center space-x-2">
+                    <i class="fa-solid fa-check-circle"></i><span>Accepter le Devis</span>
+                </button>
+            </div>
+            <button onclick="window.print()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-xl shadow-md transition text-xs flex items-center space-x-2">
+                <i class="fa-solid fa-print"></i><span>Imprimer / Télécharger PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- DOCUMENT A4 (FACTURE / DEVIS) -->
+    <div class="invoice-card bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-8 md:p-12 shadow-xl space-y-8">
         
-        <!-- EN-TÊTE -->
-        <div class="flex justify-between items-start border-b border-slate-800 pb-6">
+        <!-- EN-TÊTE DE LA FACTURE -->
+        <div class="flex justify-between items-start border-b border-slate-100 pb-8">
             <div>
-                <span id="doc-type-badge" class="px-3 py-1 rounded-md text-xs font-bold bg-sky-500/10 text-sky-400 uppercase tracking-wider">CHARGEMENT...</span>
-                <h1 class="text-2xl font-bold text-white mt-2 font-mono-code" id="doc-id">---</h1>
-                <p class="text-xs text-slate-400 mt-1" id="doc-date">Date : --/--/----</p>
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center font-bold text-white shadow-md">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-900 tracking-tight">NexusERP</span>
+                </div>
+                <p class="text-xs text-slate-500">Solutions Infrastructure & IAM</p>
+                <p class="text-xs text-slate-500">SIRET : 890 123 456 00012</p>
+                <p class="text-xs text-slate-500">TVA Intra : FR 32 890123456</p>
             </div>
-            <div id="status-badge" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                EN ATTENTE
+
+            <div class="text-right space-y-2">
+                <span id="doc-type-badge" class="inline-block px-3 py-1 rounded-md text-xs font-bold bg-sky-100 text-sky-700 uppercase tracking-wider">CHARGEMENT...</span>
+                <h1 class="text-2xl font-bold text-slate-900 font-mono-code" id="doc-id">---</h1>
+                <p class="text-xs text-slate-500" id="doc-date">Date : --/--/----</p>
+                <div id="status-badge" class="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                    EN ATTENTE
+                </div>
             </div>
         </div>
 
-        <!-- CLIENT & SOCIÉTÉ -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800/60">
-                <span class="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1">Émetteur</span>
-                <div class="text-sm font-bold text-white">NexusERP Solutions</div>
-                <div class="text-xs text-slate-400">Infrastructure & IAM</div>
+        <!-- COORDONNÉES ÉMETTEUR & CLIENT -->
+        <div class="grid grid-cols-2 gap-8 text-xs">
+            <div class="space-y-1">
+                <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-2">Émetteur</span>
+                <p class="font-bold text-slate-800 text-sm">NexusERP Solutions</p>
+                <p class="text-slate-600">12 Avenue de l'Innovation</p>
+                <p class="text-slate-600">75008 Paris, France</p>
+                <p class="text-slate-600">contact@nexuserp.io</p>
             </div>
-            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800/60">
-                <span class="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1">Client Destinataire</span>
-                <div class="text-sm font-bold text-white" id="client-name">Chargement...</div>
+
+            <div class="space-y-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] block mb-2">Facturé à</span>
+                <p class="font-bold text-slate-800 text-sm" id="client-name">Chargement...</p>
+                <p class="text-slate-600" id="client-address">Client Professionnel</p>
             </div>
         </div>
 
-        <!-- TABLEAU DÉTAILLÉ -->
-        <div class="bg-slate-900 rounded-xl border border-slate-800/60 overflow-hidden">
-            <table class="w-full text-left text-sm text-slate-300">
-                <thead class="text-xs uppercase bg-slate-950/50 text-slate-400 border-b border-slate-800">
+        <!-- TABLEAU DES PRESTATIONS -->
+        <div class="overflow-hidden border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-xs text-slate-700">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[10px]">
                     <tr>
-                        <th class="p-3">Désignation</th>
-                        <th class="p-3 text-right">Montant HT</th>
+                        <th class="p-3.5">Désignation des prestations</th>
+                        <th class="p-3.5 text-center">Qté</th>
+                        <th class="p-3.5 text-right">Prix Unitaire HT</th>
+                        <th class="p-3.5 text-right">Total HT</th>
                     </tr>
                 </thead>
-                <tbody id="items-list" class="divide-y divide-slate-800/50">
-                    <!-- Généré dynamiquement -->
+                <tbody id="items-list" class="divide-y divide-slate-100 font-medium">
+                    <!-- Injecté dynamiquement -->
                 </tbody>
             </table>
         </div>
 
-        <!-- TOTALS & TAXES -->
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800/60 space-y-2">
-            <div class="flex justify-between text-xs text-slate-400">
-                <span>Total HT</span>
-                <span class="font-mono-code" id="total-ht">0.00 €</span>
-            </div>
-            <div class="flex justify-between text-xs text-slate-400">
-                <span>TVA (20%)</span>
-                <span class="font-mono-code" id="total-tva">0.00 €</span>
-            </div>
-            <div class="flex justify-between text-lg font-bold text-white border-t border-slate-800 pt-2 mt-2">
-                <span>Total TTC</span>
-                <span class="text-emerald-400 font-mono-code" id="doc-amount">0.00 €</span>
+        <!-- TOTALS & Taux TVA -->
+        <div class="flex justify-end pt-2">
+            <div class="w-full max-w-xs space-y-2 text-xs">
+                <div class="flex justify-between text-slate-500">
+                    <span>Total HT</span>
+                    <span class="font-mono-code font-semibold text-slate-800" id="total-ht">0.00 €</span>
+                </div>
+                <div class="flex justify-between text-slate-500">
+                    <span>TVA (20%)</span>
+                    <span class="font-mono-code font-semibold text-slate-800" id="total-tva">0.00 €</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-3">
+                    <span>Total TTC à payer</span>
+                    <span class="text-sky-600 font-mono-code text-base" id="doc-amount">0.00 €</span>
+                </div>
             </div>
         </div>
 
-        <!-- ACTIONS CLIENT -->
-        <div class="space-y-3 pt-2">
-            <!-- Bouton d'acceptation (Affiché uniquement si c'est un devis en attente) -->
-            <div id="accept-section" class="hidden">
-                <button onclick="window.acceptQuote()" id="btn-accept" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-sm flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-check-circle"></i><span>Accepter et Valider le Devis</span>
-                </button>
-            </div>
-
-            <!-- Options secondaires -->
-            <button onclick="window.print()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl border border-slate-700 transition text-sm flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-print"></i><span>Imprimer ou Télécharger en PDF</span>
-            </button>
+        <!-- PIED DE PAGE LÉGAL -->
+        <div class="border-t border-slate-100 pt-6 text-[10px] text-slate-400 text-center space-y-1">
+            <p>Conditions de règlement : Paiement à réception. Pas d'escompte pour règlement anticipé.</p>
+            <p>En cas de retard de paiement, pénalités au taux annuel de 10% plus indemnité forfaitaire de recouvrement de 40 €.</p>
+            <p class="font-semibold text-slate-500">Merci pour votre confiance - NexusERP Solutions</p>
         </div>
 
     </div>
 
-    <!-- SCRIPT DE GESTION -->
+    <!-- SCRIPT DE CHARGEMENT SUPABASE -->
     <script>
         const SUPABASE_URL = 'https://esjdlddwxqkhrytvrcok.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzamRsZGR3eHFraHJ5dHZyY29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2OTAzOTMsImV4cCI6MjEwODI2NjM5M30.Ec2VMKOjh-XqVRB_gAslFhhP7103pZxEqI33ySoddZ0';
@@ -107,140 +144,25 @@
         let isQuote = false;
 
         async function loadDocumentFromURL() {
-            if (devisId) {
-                isQuote = true;
-                const { data, error } = await supabaseClient.from('devis').select('*').eq('id', devisId).single();
-                if (data) {
-                    currentDocument = data;
-                    renderDocument('DEVIS', data);
-                } else {
-                    showError("Devis introuvable.");
-                }
-            } else if (factureId) {
-                isQuote = false;
-                const { data, error } = await supabaseClient.from('factures').select('*').eq('id', factureId).single();
-                if (data) {
-                    currentDocument = data;
-                    renderDocument('FACTURE', data);
-                } else {
-                    showError("Facture introuvable.");
-                }
+            let docId = devisId || factureId;
+            isQuote = !!devisId;
+            let tableName = isQuote ? 'devis' : 'factures';
+
+            if (!docId) { showError("Aucun document spécifié."); return; }
+
+            const { data: docData } = await supabaseClient.from(tableName).select('*').eq('id', docId).single();
+            const { data: itemsData } = await supabaseClient.from('document_items').select('*').eq('doc_id', docId);
+
+            if (docData) {
+                currentDocument = docData;
+                renderDocument(isQuote ? 'DEVIS' : 'FACTURE', docData, itemsData || []);
             } else {
-                showError("Aucun document spécifié dans le lien.");
+                showError("Document introuvable.");
             }
         }
 
-        function renderDocument(type, data) {
+        function renderDocument(type, doc, items) {
             document.getElementById('doc-type-badge').innerText = type;
-            document.getElementById('doc-id').innerText = data.id;
-            document.getElementById('client-name').innerText = data.client_name || 'N/A';
-            
-            // Formatage de la date
-            const dateObj = data.created_at ? new Date(data.created_at) : new Date();
-            document.getElementById('doc-date').innerText = 'Date : ' + dateObj.toLocaleDateString('fr-FR');
-
-            // Calculs Financiers Détaillés (20% TVA)
-            const totalTTC = parseFloat(data.amount_ttc || 0);
-            const totalHT = totalTTC / 1.20;
-            const totalTVA = totalTTC - totalHT;
-
-            document.getElementById('total-ht').innerText = totalHT.toFixed(2) + ' €';
-            document.getElementById('total-tva').innerText = totalTVA.toFixed(2) + ' €';
-            document.getElementById('doc-amount').innerText = totalTTC.toFixed(2) + ' €';
-
-            // Injection des prestations détaillées
-            document.getElementById('items-list').innerHTML = `
-                <tr>
-                    <td class="p-3 text-white font-medium">Prestations de services & infrastructure (${type === 'DEVIS' ? 'Devis' : 'Facture'})</td>
-                    <td class="p-3 text-right font-mono-code font-bold text-white">${totalHT.toFixed(2)} €</td>
-                </tr>
-            `;
-
-            // Statut & Affichage du bouton d'acceptation
-            const statusBadge = document.getElementById('status-badge');
-            const acceptSection = document.getElementById('accept-section');
-
-            if (type === 'DEVIS') {
-                if (data.status === 'ACCEPTED') {
-                    statusBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                    statusBadge.innerText = "DEVIS ACCEPTÉ";
-                    acceptSection.classList.add('hidden');
-                } else {
-                    statusBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                    statusBadge.innerText = "EN ATTENTE D'ACCEPTATION";
-                    acceptSection.classList.remove('hidden');
-                }
-            } else {
-                // FACTURE
-                statusBadge.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20";
-                statusBadge.innerText = data.status === 'PAID' ? 'FACTURE PAYÉE' : 'PAYÉE';
-                acceptSection.classList.add('hidden');
-            }
-        }
-
-       window.acceptQuote = async function() {
-    if (!currentDocument || !isQuote) return;
-
-    const btn = document.getElementById('btn-accept');
-    btn.disabled = true;
-    btn.innerText = "Conversion en facture...";
-
-    const quoteId = currentDocument.id;
-    const invoiceId = quoteId.replace('DEV-', 'FAC-');
-
-    // 1. Mettre à jour le statut du devis en 'ACCEPTED'
-    const { error: quoteErr } = await supabaseClient
-        .from('devis')
-        .update({ status: 'ACCEPTED' })
-        .eq('id', quoteId);
-
-    if (quoteErr) {
-        alert("Erreur lors de la mise à jour du devis : " + quoteErr.message);
-        btn.disabled = false;
-        btn.innerText = "Accepter et Valider le Devis";
-        return;
-    }
-
-    // 2. Récupérer les lignes de prestations associées au devis
-    const { data: items } = await supabaseClient
-        .from('document_items')
-        .select('*')
-        .eq('doc_id', quoteId);
-
-    // 3. Créer la nouvelle facture dans la table 'factures'
-    const { error: invoiceErr } = await supabaseClient
-        .from('factures')
-        .insert([{
-            id: invoiceId,
-            client_name: currentDocument.client_name,
-            amount_ttc: currentDocument.amount_ttc,
-            status: 'PENDING'
-        }]);
-
-    if (invoiceErr) {
-        console.error("Erreur création facture :", invoiceErr);
-    } else if (items && items.length > 0) {
-        // 4. Copier les lignes de services pour la nouvelle facture
-        const newItems = items.map(item => ({
-            doc_id: invoiceId,
-            description: item.description,
-            quantity: item.quantity,
-            unit_price: item.unit_price
-        }));
-
-        await supabaseClient.from('document_items').insert(newItems);
-    }
-
-    alert("Le devis a été accepté et la facture " + invoiceId + " a été générée !");
-    loadDocumentFromURL();
-};
-
-        function showError(msg) {
-            document.getElementById('doc-type-badge').innerText = 'ERREUR';
-            document.getElementById('client-name').innerText = msg;
-        }
-
-        loadDocumentFromURL();
-    </script>
-</body>
-</html>
+            document.getElementById('doc-id').innerText = doc.id;
+            document.getElementById('client-name').innerText = doc.client_name;
+            document.getElementById('doc-date').innerText = '
