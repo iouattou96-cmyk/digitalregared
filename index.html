@@ -216,7 +216,7 @@
             }
         }
 
-        window.acceptQuote = async function() {
+       window.acceptQuote = async function() {
             if (!currentDocument || !isQuote) return;
 
             const btn = document.getElementById('btn-accept');
@@ -226,17 +226,25 @@
             const quoteId = currentDocument.id;
             const invoiceId = quoteId.replace('DEV-', 'FAC-');
 
-            await supabaseClient.from('devis').update({ status: 'ACCEPTED' }).eq('id', quoteId);
-
+            // 1. Récupérer les prestations du devis avant de le supprimer
             const { data: items } = await supabaseClient.from('document_items').select('*').eq('doc_id', quoteId);
 
-            await supabaseClient.from('factures').insert([{
+            // 2. Créer la nouvelle facture dans la table 'factures'
+            const { error: invoiceErr } = await supabaseClient.from('factures').insert([{
                 id: invoiceId,
                 client_name: currentDocument.client_name,
                 amount_ttc: currentDocument.amount_ttc,
                 status: 'PAID'
             }]);
 
+            if (invoiceErr) {
+                alert("Erreur lors de la création de la facture : " + invoiceErr.message);
+                btn.disabled = false;
+                btn.innerText = "Accepter le Devis";
+                return;
+            }
+
+            // 3. Copier les lignes de services sur la nouvelle facture
             if (items && items.length > 0) {
                 const newItems = items.map(item => ({
                     doc_id: invoiceId,
@@ -245,18 +253,19 @@
                     unit_price: item.unit_price
                 }));
                 await supabaseClient.from('document_items').insert(newItems);
+                
+                // Supprimer les anciennes lignes liées au devis
+                await supabaseClient.from('document_items').delete().eq('doc_id', quoteId);
             }
 
-            alert("Devis accepté ! La facture " + invoiceId + " a été générée.");
-            loadDocumentFromURL();
+            // 4. Supprimer le devis de la table 'devis'
+            await supabaseClient.from('devis').delete().eq('id', quoteId);
+
+            alert("Devis accepté ! Le document a été converti et basculé en facture (" + invoiceId + ").");
+            
+            // Rediriger ou actualiser pour afficher la facture nouvellement créée
+            window.location.href = `/?facture=${invoiceId}`;
         };
-
-        function showError(msg) {
-            document.getElementById('doc-type-badge').innerText = 'ERREUR';
-            document.getElementById('client-name').innerText = msg;
-        }
-
-        loadDocumentFromURL();
     </script>
 </body>
 </html>
